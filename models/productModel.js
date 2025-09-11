@@ -17,6 +17,15 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    productCode: {
+        type: String,
+        required: true,
+    },
+    isFeatured: {
+        type: Boolean,
+        default: false,
+        required: false,
+    },
 });
 
 const Product = mongoose.model("Product", productSchema);

@@ -2,89 +2,98 @@ const Product = require("../models/productModel");
 const path = require("path");
 
 // Create product
-exports.createProduct = async (req, res) => {
+const createProduct = async (req, res) => {
     try {
-        const { name, description, price } = req.body;
+        const { name, description, price, productCode } = req.body;
         if (!req.file) {
-            return res.status(400).json({ message: "Image is required" });
+            return res.status(400).json({ success: false, message: "Image is required" });
         }
         // Only allow PNG
         if (path.extname(req.file.originalname).toLowerCase() !== ".png") {
-            return res.status(400).json({ message: "Only PNG images are allowed" });
+            return res.status(400).json({ success: false, message: "Only PNG images are allowed" });
         }
         const image = req.file.filename;
-        const product = new Product({ name, description, price, image });
-        await product.save();
-        res.status(201).json(product);
+        const product = { name, description, price, image, productCode };
+        await Product.create(product);
+        res.status(201).json({ success: true, message: "Product created successfully", data: product });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Get all products
-exports.getAllProducts = async (req, res) => {
+const getAllProducts = async (req, res) => {
     try {
         const products = await Product.find();
-        res.status(200).json(products);
+        res.status(200).json({ success: true, count: products.length, data: products });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Get single product
-exports.getProductById = async (req, res) => {
+const getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(404).json({ success: false, message: "Product not found" });
         }
-        res.status(200).json(product);
+        res.status(200).json({ success: true, data: product });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Get featured products (example: top 5 by price)
-exports.getFeaturedProducts = async (req, res) => {
+// Get featured products
+const getFeaturedProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({ price: -1 }).limit(5);
-        res.status(200).json(products);
+        const products = await Product.find({ isFeatured: true });
+        res.status(200).json({ success: true, count: products.length, data: products });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Update product
-exports.updateProduct = async (req, res) => {
+const updateProduct = async (req, res) => {
     try {
-        const { name, description, price } = req.body;
-        let updateData = { name, description, price };
+        const { name, description, price, productCode, isFeatured } = req.body;
+        let updateData = { name, description, price, productCode, isFeatured };
         if (req.file) {
             // Only allow PNG
             if (path.extname(req.file.originalname).toLowerCase() !== ".png") {
-                return res.status(400).json({ message: "Only PNG images are allowed" });
+                return res.status(400).json({ success: false, message: "Only PNG images are allowed" });
             }
             updateData.image = req.file.filename;
         }
         const product = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!product) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(404).json({ success: false, message: "Product not found" });
         }
-        res.status(200).json(product);
+        res.status(200).json({ success: true, message: "Product updated successfully", data: product });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Delete product
-exports.deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
         if (!product) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(404).json({ success: false, message: "Product not found" });
         }
-        res.status(200).json({ message: "Product deleted successfully" });
+        res.status(200).json({ success: true, message: "Product deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
+};
+
+module.exports = {
+    createProduct,
+    getAllProducts,
+    getProductById,
+    getFeaturedProducts,
+    updateProduct,
+    deleteProduct,
 };

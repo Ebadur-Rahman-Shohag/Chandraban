@@ -1,6 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/productController");
+const {
+    createProduct,
+    getAllProducts,
+    getProductById,
+    getFeaturedProducts,
+    updateProduct,
+    deleteProduct,
+} = require("../controllers/productController");
 const multer = require("multer");
 const path = require("path");
 
@@ -23,21 +31,21 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter });
 
 // Create product (with image upload)
-router.post("/", upload.single("image"), productController.createProduct);
+router.post("/", upload.single("image"), createProduct);
 
 // Get all products
-router.get("/", productController.getAllProducts);
-
-// Get single product
-router.get("/:id", productController.getProductById);
+router.get("/", getAllProducts);
 
 // Get featured products
-router.get("/featured", productController.getFeaturedProducts);
+router.get("/featured", getFeaturedProducts);
+
+// Get single product
+router.get("/:id", getProductById);
 
 // Update product (with optional image upload)
-router.put("/:id", upload.single("image"), productController.updateProduct);
+router.put("/:id", upload.single("image"), updateProduct);
 
 // Delete product
-router.delete("/:id", productController.deleteProduct);
+router.delete("/:id", deleteProduct);
 
 module.exports = router;
